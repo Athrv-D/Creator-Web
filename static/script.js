@@ -12,7 +12,7 @@ menuToggle.addEventListener("click", () => {
   menuToggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
 });
 
-nav.querySelectorAll("a").forEach(link => {
+nav.querySelectorAll("a").forEach((link) => {
   link.addEventListener("click", () => {
     nav.classList.remove("open");
     menuToggle.setAttribute("aria-expanded", "false");
@@ -26,11 +26,9 @@ form.addEventListener("submit", async (event) => {
 
   if (!form.reportValidity()) return;
 
-  const formData = new FormData(form);
-  const payload = Object.fromEntries(formData.entries());
-
+  const payload = Object.fromEntries(new FormData(form).entries());
   submitButton.disabled = true;
-  submitButton.querySelector("span:first-child").textContent = "Sending request…";
+  submitButton.querySelector("span:first-child").textContent = "Sending your request…";
 
   try {
     const response = await fetch("/api/leads", {
@@ -41,10 +39,13 @@ form.addEventListener("submit", async (event) => {
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.detail || "We couldn't submit your request. Please try again.");
+      const detail = Array.isArray(result.detail)
+        ? result.detail.map((item) => item.msg).join(" ")
+        : result.detail;
+      throw new Error(detail || "We couldn't submit your request. Please try again.");
     }
 
-    statusBox.textContent = "Thanks! Your request has been received. We'll follow up by email.";
+    statusBox.textContent = "Thank you — your request is in. We'll be in touch by email.";
     statusBox.classList.add("success");
     form.reset();
   } catch (error) {
@@ -52,6 +53,6 @@ form.addEventListener("submit", async (event) => {
     statusBox.classList.add("error");
   } finally {
     submitButton.disabled = false;
-    submitButton.querySelector("span:first-child").textContent = "Send my demo request";
+    submitButton.querySelector("span:first-child").textContent = "Request my free demo";
   }
 });
